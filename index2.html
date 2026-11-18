@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>⭐ Ziua Republicii Steliste Române ⭐</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+  body { background: linear-gradient(180deg, #eff6ff 0%, #ecfdf5 100%); color: #0f172a; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  #gate { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+  .gate-title { font-size: clamp(1.6em, 5.5vw, 2.5em); color: #1e40af; margin-bottom: 12px; line-height: 1.25; }
+  .gate-sub { color: #475569; margin-bottom: 30px; font-size: 1.05em; }
+  .gate-input { width: 100%; max-width: 380px; padding: 16px 18px; font-size: 16px; border: 2px solid #bfdbfe; border-radius: 12px; outline: none; background: #fff; transition: border-color .2s; text-align: center; -webkit-appearance: none; }
+  .gate-input:focus { border-color: #3b82f6; }
+  .gate-btn { margin-top: 16px; width: 100%; max-width: 380px; padding: 16px; font-size: 1.1em; font-weight: 600; background: #3b82f6; color: #fff; border: none; border-radius: 12px; cursor: pointer; transition: background .2s, transform .1s; }
+  .gate-btn:hover:not(:disabled) { background: #2563eb; }
+  .gate-btn:active:not(:disabled) { transform: scale(.98); }
+  .gate-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+  .topbar { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.95); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 2px 12px rgba(30,64,175,.08); padding: 10px 14px; }
+  .topbar-inner { max-width: 1100px; margin: 0 auto; }
+  .topbar-title { font-size: .95em; font-weight: 700; color: #1e40af; text-align: center; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-counter { text-align: center; font-size: .9em; color: #475569; margin-bottom: 8px; }
+  .topbar-counter b { color: #16a34a; font-size: 1.1em; }
+  .jump { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+  .jump::-webkit-scrollbar { display: none; }
+  .jump a { flex-shrink: 0; padding: 6px 12px; background: #eff6ff; color: #1e40af; border-radius: 20px; text-decoration: none; font-size: .85em; font-weight: 500; white-space: nowrap; border: 1px solid #dbeafe; }
+  .jump a:active { background: #dbeafe; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 14px 14px 140px; }
+  .section { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(30,64,175,.06); scroll-margin-top: 140px; }
+  .section-title { font-size: 1.25em; color: #1e40af; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 2px solid #dbeafe; }
+  .group-title { font-size: .8em; color: #64748b; font-weight: 700; margin: 16px 0 8px; padding-left: 2px; text-transform: uppercase; letter-spacing: .06em; }
+  .group-title:first-child { margin-top: 0; }
+  .items { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  @media (min-width: 700px) { .items { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1000px) { .items { grid-template-columns: 1fr 1fr 1fr; } }
+
+  .cb-label { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; cursor: pointer; font-size: .96em; transition: all .15s; user-select: none; }
+  .cb-label:active { background: #eff6ff; }
+  .cb-label input[type="checkbox"] { width: 22px; height: 22px; flex-shrink: 0; accent-color: #3b82f6; cursor: pointer; }
+  .cb-label:has(input:checked) { background: #dbeafe; border-color: #3b82f6; }
+  .cb-label:has(input:checked) span { color: #1e40af; font-weight: 600; }
+
+  .meat-item { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 2px; transition: all .15s; }
+  .meat-item:has(.item-cb:checked) { background: #dbeafe; border-color: #3b82f6; }
+  .meat-item .cb-label { padding: 8px 10px; border: none; background: transparent; }
+  .meat-item .cond-label { display: flex; align-items: center; gap: 8px; padding: 4px 10px 8px 42px; font-size: .86em; color: #64748b; cursor: pointer; user-select: none; }
+  .meat-item .cond-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: #16a34a; cursor: pointer; }
+  .meat-item .cond-label:has(input:disabled) { opacity: .35; cursor: not-allowed; }
+  .meat-item .cond-label:has(input:checked) span { color: #16a34a; font-weight: 600; }
+
+  .add-extra { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #cbd5e1; }
+  .add-input { flex: 1; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 16px; outline: none; -webkit-appearance: none; min-width: 0; }
+  .add-input:focus { border-color: #3b82f6; }
+  .add-btn { padding: 10px 16px; background: #16a34a; color: #fff; border: none; border-radius: 8px; font-size: .92em; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .add-btn:active { background: #15803d; }
+
+  .allergies-section { background: #fef2f2; border: 2px solid #ef4444; border-radius: 16px; padding: 18px; margin-bottom: 16px; scroll-margin-top: 140px; }
+  .allergies-label { display: block; font-weight: 700; color: #dc2626; margin-bottom: 10px; font-size: 1.02em; }
+  .allergies-input { width: 100%; min-height: 82px; padding: 12px 14px; border: 2px solid #fca5a5; border-radius: 10px; font-size: 16px; font-family: inherit; outline: none; resize: vertical; background: #fff; -webkit-appearance: none; }
+  .allergies-input:focus { border-color: #ef4444; }
+
+  .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,.97); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgba(30,64,175,.1); }
+  .submit-btn { width: 100%; max-width: 640px; margin: 0 auto; display: block; padding: 16px; font-size: 1.1em; font-weight: 700; background: linear-gradient(135deg,#3b82f6,#16a34a); color: #fff; border: none; border-radius: 14px; cursor: pointer; transition: transform .1s, opacity .2s; }
+  .submit-btn:active:not(:disabled) { transform: scale(.98); }
+  .submit-btn:disabled { opacity: .7; cursor: wait; }
+
+  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 12px 22px; border-radius: 10px; font-size: .9em; z-index: 200; transition: transform .3s, opacity .3s; opacity: 0; pointer-events: none; max-width: 90vw; text-align: center; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  /* ===== STAR GUIDE ===== */
+  .star-guide { position: fixed; right: 14px; bottom: 96px; z-index: 150; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
+  .star-bubble { pointer-events: auto; background: #fff; border: 2.5px solid #fbbf24; border-radius: 18px; padding: 14px 16px 12px; max-width: 280px; box-shadow: 0 10px 30px rgba(217,119,6,.28), 0 2px 8px rgba(0,0,0,.06); opacity: 0; transform: translateY(12px) scale(.9); transform-origin: bottom right; transition: opacity .25s ease, transform .25s ease; display: none; position: relative; }
+  .star-bubble.visible { opacity: 1; transform: translateY(0) scale(1); display: block; }
+  .star-bubble::after { content: ''; position: absolute; bottom: -12px; right: 22px; width: 0; height: 0; border-left: 11px solid transparent; border-right: 11px solid transparent; border-top: 12px solid #fbbf24; }
+  .star-bubble::before { content: ''; position: absolute; bottom: -7px; right: 24px; width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 10px solid #fff; z-index: 1; }
+  .star-bubble-text { font-size: .92em; color: #334155; line-height: 1.55; margin-bottom: 12px; }
+  .star-bubble-text b { color: #b45309; }
+  .star-bubble-actions { display: flex; gap: 6px; align-items: center; }
+  .star-step { font-size: .72em; color: #94a3b8; font-weight: 700; margin-right: auto; padding: 2px 0; }
+  .star-btn { border: none; font-family: inherit; cursor: pointer; transition: transform .1s, background .15s, color .15s; }
+  .star-btn:active { transform: scale(.94); }
+  .star-btn-next { padding: 9px 16px; font-size: .86em; font-weight: 700; background: #f59e0b; color: #fff; border-radius: 10px; }
+  .star-btn-next:hover { background: #d97706; }
+  .star-btn-skip { padding: 9px 10px; font-size: .82em; font-weight: 600; background: transparent; color: #94a3b8; border-radius: 10px; }
+  .star-btn-skip:hover { color: #475569; background: #f1f5f9; }
+
+  .star-mascot { pointer-events: auto; width: 48px; height: 48px; border: none; background: transparent; cursor: pointer; padding: 0; position: relative; animation: starFloat 3.2s ease-in-out infinite; transition: transform .2s; filter: drop-shadow(0 5px 12px rgba(217,119,6,.32)); flex-shrink: 0; }
+  .star-mascot:hover { transform: scale(1.08); }
+  .star-mascot:active { transform: scale(.94); }
+  .star-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+  @keyframes starFloat { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
+
+  .star-mascot.pulse::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 3px solid #fbbf24; animation: starPulse 1.8s ease-out infinite; pointer-events: none; }
+  @keyframes starPulse { 0% { transform: scale(0.7); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+
+  @media (max-width: 400px) {
+    .star-bubble { max-width: 210px; padding: 11px 13px 9px; }
+    .star-bubble-text { font-size: .84em; }
+    .star-mascot { width: 40px; height: 40px; }
+    .star-guide { right: 10px; bottom: 88px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <h1 class="gate-title">⭐ Ziua Republicii Steliste Române ⭐</h1>
+  <p class="gate-sub">Introdu numele tău pentru a începe comanda</p>
+  <input type="text" id="nameInput" class="gate-input" placeholder="Numele tău" autocomplete="name" autocapitalize="words">
+  <button id="startBtn" class="gate-btn" disabled>Începe comanda</button>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-title">⭐ Ziua Republicii Steliste Române ⭐</div>
+      <div class="topbar-counter">Ai ales <b id="counter">0</b> produse</div>
+      <div class="jump">
+        <a href="#carne">🥩 Carne</a>
+        <a href="#salate">🥗 Salate</a>
+        <a href="#legume">🔥 Legume</a>
+        <a href="#sosuri">🥫 Sosuri</a>
+        <a href="#bauturi">🥤 Băuturi</a>
+        <a href="#alergii">⚠️ Alergii</a>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div id="sections"></div>
+
+    <div class="allergies-section" id="alergii">
+      <label class="allergies-label" for="alergiiInput">⚠️ Alergii / lucruri pe care NU le poți mânca</label>
+      <textarea id="alergiiInput" class="allergies-input" placeholder="Ex: fără nuci, alergie la fructe de mare..."></textarea>
+    </div>
+  </main>
+
+  <div class="bottom-bar">
+    <button id="submitBtn" class="submit-btn">Trimite comanda</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div class="star-guide" id="starGuide">
+  <div class="star-bubble" id="starBubble">
+    <div class="star-bubble-text" id="starText"></div>
+    <div class="star-bubble-actions">
+      <span class="star-step" id="starStep"></span>
+      <button class="star-btn star-btn-skip" id="starSkip" type="button">Sari peste</button>
+      <button class="star-btn star-btn-next" id="starNext" type="button">Următorul →</button>
+    </div>
+  </div>
+  <button class="star-mascot" id="starMascot" type="button" aria-label="Ghid">
+    <svg class="star-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="starGrad" cx="50%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#fef9c3"/>
+          <stop offset="55%" stop-color="#fbbf24"/>
+          <stop offset="100%" stop-color="#f59e0b"/>
+        </radialGradient>
+      </defs>
+      <polygon points="50,5 62,40 98,40 69,62 80,95 50,74 20,95 31,62 2,40 38,40" fill="url(#starGrad)" stroke="#d97706" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="40" cy="46" r="3.6" fill="#78350f"/>
+      <circle cx="60" cy="46" r="3.6" fill="#78350f"/>
+      <circle cx="41.5" cy="44.5" r="1.2" fill="#fff"/>
+      <circle cx="61.5" cy="44.5" r="1.2" fill="#fff"/>
+      <path d="M41 56 Q50 63 59 56" stroke="#78350f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <circle cx="32" cy="55" r="3.2" fill="#fca5a5" opacity="0.75"/>
+      <circle cx="68" cy="55" r="3.2" fill="#fca5a5" opacity="0.75"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+const EVENT_NAME = '⭐ Ziua Republicii Steliste Române ⭐';
+
+const SECTIONS = [
+  { id: 'carne', title: '🥩 Carne', hasCondimente: true, groups: [{ items: [
+    'Ceafă de porc','Spată de porc','Coaste de porc','Mușchiuleț de porc','Șuncă de porc',
+    'Mușchi de vită','Pulpă de vită','Piept de vită','Ceafă de vită',
+    'Piept de pui','Pulpe de pui','Aripioare de pui','Spate de pui',
+    'Cotlet de miel','Pulpă de miel','Piept de curcan','Pulpă de curcan',
+    'Mici / cârnăciori','Cârnați proaspeți','Cârnați afumați',
+    'Hamsie','Cod','Păstrăv','Hering','Pangasius'
+  ]}]},
+  { id: 'salate', title: '🥗 Salate', groups: [{ items: [
+    'Salată de varză','Salată de boeuf','Salată verde cu roșii','Salată de castraveți',
+    'Salată de vinete','Salată orientală','Salată de orez','Salată de fasole',
+    'Murături asortate','Salată de crudități'
+  ]}]},
+  { id: 'legume', title: '🔥 Legume, pâine și cartofi la grătar', groups: [{ items: [
+    'Ardei gras la grătar','Dovlecel la grătar','Vinete la grătar','Ceapă la grătar',
+    'Ciuperci la grătar','Porumb la grătar','Cartofi la grătar','Cartofi copți în folie',
+    'Pâine la grătar','Lipie','Mămăligă'
+  ]}]},
+  { id: 'sosuri', title: '🥫 Sosuri', groups: [{ items: ['Ketchup','Maioneză','Muștar','Sweet chili','Sos BBQ','Mujdei','Tzatziki','Salsa'] }]},
+  { id: 'bauturi', title: '🥤 Băuturi', groups: [
+    { name: 'Sucuri carbogazoase', items: ['Coca-Cola','Coca-Cola Zero','Fanta','Sprite','Pepsi','7Up'] },
+    { name: 'Ape', items: ['Apă plată','Apă minerală','Apă cu lămâie'] },
+    { name: 'Sucuri 100% fructe', items: ['Suc 100% portocale','Suc 100% mere','Suc 100% roșii','Suc 100% grapefruit','Suc 100% ananas','Suc 100% struguri','Suc 100% fructe Multivitamin'] },
+    { name: 'Ceaiuri', items: ['Ceai negru','Ceai verde','Ceai de mentă','Ceai de fructe de pădure','Ceai de mușețel','Ceai de tei','Ceai rece cu lămâie'] },
+    { name: 'Extra', items: ['Gheață'] }
+  ]}
+];
+
+let currentName = '';
+let appStarted = false;
+let extraItems = { carne: [], salate: [], legume: [], sosuri: [], bauturi: [] };
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escapeAttr(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200);
+}
+
+const nameInput = document.getElementById('nameInput');
+const startBtn = document.getElementById('startBtn');
+
+nameInput.addEventListener('input', function () {
+  startBtn.disabled = nameInput.value.trim().length < 2;
+});
+nameInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && !startBtn.disabled) startBtn.click();
+});
+startBtn.addEventListener('click', function () {
+  currentName = nameInput.value.trim();
+  appStarted = true;
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  renderSections();
+  window.scrollTo(0, 0);
+  setTimeout(function () { showTourStep(1); }, 550);
+});
+
+function renderSections() {
+  const container = document.getElementById('sections');
+  let html = '';
+  SECTIONS.forEach(function (sec) {
+    html += '<section class="section" id="' + sec.id + '">';
+    html += '<h2 class="section-title">' + sec.title + '</h2>';
+    sec.groups.forEach(function (grp, gi) {
+      if (grp.name) html += '<h3 class="group-title">' + grp.name + '</h3>';
+      html += '<div class="items" data-section="' + sec.id + '">';
+      grp.items.forEach(function (item, ii) {
+        const key = sec.id + '_' + gi + '_' + ii;
+        if (sec.hasCondimente) {
+          html += '<div class="meat-item">' +
+                    '<label class="cb-label">' +
+                      '<input type="checkbox" class="item-cb" data-section="' + sec.id + '" data-name="' + escapeAttr(item) + '">' +
+                      '<span>' + escapeHtml(item) + '</span>' +
+                    '</label>' +
+                    '<label class="cond-label">' +
+                      '<input type="checkbox" class="cond-cb" data-parent="' + key + '" disabled>' +
+                      '<span>cu condimente</span>' +
+                    '</label>' +
+                  '</div>';
+        } else {
+          html += '<label class="cb-label">' +
+                    '<input type="checkbox" class="item-cb" data-section="' + sec.id + '" data-name="' + escapeAttr(item) + '">' +
+                    '<span>' + escapeHtml(item) + '</span>' +
+                  '</label>';
+        }
+      });
+      html += '</div>';
+    });
+    html += '<div class="add-extra">' +
+              '<input type="text" class="add-input" data-section="' + sec.id + '" placeholder="Adaugă altceva...">' +
+              '<button class="add-btn" data-section="' + sec.id + '">+ Adaugă</button>' +
+            '</div>';
+    html += '</section>';
+  });
+  container.innerHTML = html;
+  attachListeners();
+}
+
+function attachListeners() {
+  document.querySelectorAll('.meat-item').forEach(function (meatEl) {
+    const itemCb = meatEl.querySelector('.item-cb');
+    const condCb = meatEl.querySelector('.cond-cb');
+    itemCb.addEventListener('change', function () {
+      condCb.disabled = !itemCb.checked;
+      if (!itemCb.checked) condCb.checked = false;
+      updateCounter();
+    });
+  });
+  document.querySelectorAll('.items > .cb-label > .item-cb').forEach(function (cb) {
+    cb.addEventListener('change', updateCounter);
+  });
+  document.querySelectorAll('.add-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const secId = btn.dataset.section;
+      const input = document.querySelector('.add-input[data-section="' + secId + '"]');
+      const val = input.value.trim();
+      if (!val) return;
+      addExtraItem(secId, val);
+      input.value = '';
+    });
+  });
+  document.querySelectorAll('.add-input').forEach(function (inp) {
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.querySelector('.add-btn[data-section="' + inp.dataset.section + '"]').click();
+      }
+    });
+  });
+}
+
+function addExtraItem(secId, name) {
+  const sec = SECTIONS.find(function (s) { return s.id === secId; });
+  if (!sec) return;
+  const itemsContainers = document.querySelectorAll('.section#' + secId + ' .items');
+  const target = itemsContainers[itemsContainers.length - 1];
+
+  if (sec.hasCondimente) {
+    const wrap = document.createElement('div');
+    wrap.className = 'meat-item';
+    wrap.innerHTML =
+      '<label class="cb-label">' +
+        '<input type="checkbox" class="item-cb" data-section="' + secId + '" data-name="' + escapeAttr(name) + '" checked>' +
+        '<span>' + escapeHtml(name) + '</span>' +
+      '</label>' +
+      '<label class="cond-label">' +
+        '<input type="checkbox" class="cond-cb">' +
+        '<span>cu condimente</span>' +
+      '</label>';
+    target.appendChild(wrap);
+    const itemCb = wrap.querySelector('.item-cb');
+    const condCb = wrap.querySelector('.cond-cb');
+    itemCb.addEventListener('change', function () {
+      condCb.disabled = !itemCb.checked;
+      if (!itemCb.checked) condCb.checked = false;
+      updateCounter();
+    });
+  } else {
+    const wrap = document.createElement('label');
+    wrap.className = 'cb-label';
+    wrap.innerHTML =
+      '<input type="checkbox" class="item-cb" data-section="' + secId + '" data-name="' + escapeAttr(name) + '" checked>' +
+      '<span>' + escapeHtml(name) + '</span>';
+    target.appendChild(wrap);
+    wrap.querySelector('.item-cb').addEventListener('change', updateCounter);
+  }
+
+  extraItems[secId].push(name);
+  updateCounter();
+  showToast('Adăugat: ' + name);
+}
+
+function updateCounter() {
+  const count = document.querySelectorAll('.item-cb:checked').length;
+  document.getElementById('counter').textContent = count;
+}
+
+function collectOrder() {
+  const order = {
+    eveniment: EVENT_NAME,
+    nume: currentName,
+    data: new Date().toISOString(),
+    alergii: document.getElementById('alergiiInput').value.trim(),
+    selectii: { carne: {}, salate: {}, legume: {}, sosuri: {}, bauturi: {} },
+    adaugate_de_utilizator: {
+      carne: extraItems.carne.slice(),
+      salate: extraItems.salate.slice(),
+      legume: extraItems.legume.slice(),
+      sosuri: extraItems.sosuri.slice(),
+      bauturi: extraItems.bauturi.slice()
+    }
+  };
+  document.querySelectorAll('.item-cb').forEach(function (cb) {
+    if (!cb.checked) return;
+    const secId = cb.dataset.section;
+    const name = cb.dataset.name;
+    if (!order.selectii[secId]) return;
+    if (secId === 'carne') {
+      const wrap = cb.closest('.meat-item');
+      const condCb = wrap ? wrap.querySelector('.cond-cb') : null;
+      order.selectii.carne[name] = { selectat: true, cu_condimente: !!(condCb && condCb.checked) };
+    } else {
+      order.selectii[secId][name] = true;
+    }
+  });
+  return order;
+}
+
+document.getElementById('submitBtn').addEventListener('click', function () {
+  const btn = this;
+  if (btn.disabled) return;
+
+  const checkedCount = document.querySelectorAll('.item-cb:checked').length;
+  if (checkedCount === 0) {
+    if (!confirm('Nu ai selectat niciun produs. Sigur vrei să trimiți comanda goală?')) return;
+  }
+
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Se pregătește…';
+
+  const order = collectOrder();
+  const ok = downloadJSONFile(order);
+  openSummaryTab(order, ok);
+
+  setTimeout(function () {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }, 1500);
+});
+
+function buildFilename(nume) {
+  const safeName = (nume || 'comanda').replace(/[^a-zA-Z0-9ăâîșțĂÂÎȘȚ]+/g, '_').replace(/^_+|_+$/g, '');
+  return 'Ziua_Republicii_Steliste_Romane_' + (safeName || 'comanda') + '.json';
+}
+
+function downloadJSONFile(order) {
+  try {
+    const filename = buildFilename(order.nume);
+    const json = JSON.stringify(order, null, 2);
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveOrOpenBlob(blob, filename);
+      return true;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () {
+      if (a.parentNode) a.parentNode.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 500);
+    return true;
+  } catch (e) { return false; }
+}
+
+function openSummaryTab(order, downloadOK) {
+  const html = buildSummaryHTML(order, downloadOK);
+  const w = window.open('', '_blank');
+  if (!w) {
+    showToast(downloadOK ? 'Comanda a fost descărcată! ✅' : 'Eroare la descărcare.');
+    return;
+  }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+function buildSummaryHTML(order, downloadOK) {
+  const CATS = [
+    { key: 'carne',   label: '🥩 Carne',                color: '#ef4444' },
+    { key: 'salate',  label: '🥗 Salate',               color: '#22c55e' },
+    { key: 'legume',  label: '🔥 Legume, pâine, cartofi', color: '#f59e0b' },
+    { key: 'sosuri',  label: '🥫 Sosuri',               color: '#a855f7' },
+    { key: 'bauturi', label: '🥤 Băuturi',              color: '#0ea5e9' }
+  ];
+  const perCat = {};
+  CATS.forEach(function (c) { perCat[c.key] = []; });
+  Object.keys(order.selectii.carne).forEach(function (name) {
+    const v = order.selectii.carne[name];
+    if (v && v.selectat) perCat.carne.push({ name: name, cu_condimente: v.cu_condimente });
+  });
+  ['salate', 'legume', 'sosuri', 'bauturi'].forEach(function (sec) {
+    Object.keys(order.selectii[sec]).forEach(function (name) {
+      if (order.selectii[sec][name]) perCat[sec].push({ name: name });
+    });
+  });
+  const total = CATS.reduce(function (sum, c) { return sum + perCat[c.key].length; }, 0);
+  const catsWithItems = CATS.filter(function (c) { return perCat[c.key].length > 0; }).length;
+  const maxCount = Math.max.apply(null, [1].concat(CATS.map(function (c) { return perCat[c.key].length; })));
+  const d = new Date(order.data);
+  const dateStr = d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'long', year: 'numeric' }) +
+                  ' · ' + d.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+  const alergiiHTML = order.alergii
+    ? '<div class="allergy-box"><div class="allergy-icon">⚠️</div><div><div class="allergy-title">Alergii declarate</div><div class="allergy-text">' + escapeHtml(order.alergii) + '</div></div></div>'
+    : '';
+  const chartHTML = CATS.map(function (c) {
+    const n = perCat[c.key].length;
+    const pct = Math.round((n / maxCount) * 100);
+    return '<div class="chart-row"><div class="chart-label">' + c.label + '</div><div class="chart-track"><div class="chart-fill" style="width:' + pct + '%;background:' + c.color + ';"></div></div><div class="chart-value">' + n + '</div></div>';
+  }).join('');
+  const sectionsHTML = CATS.map(function (c) {
+    const items = perCat[c.key];
+    if (items.length === 0) return '';
+    const listHTML = items.map(function (it) {
+      const isExtra = (order.adaugate_de_utilizator[c.key] || []).indexOf(it.name) !== -1;
+      let tags = '';
+      if (it.cu_condimente !== undefined) {
+        tags += it.cu_condimente ? '<span class="tag tag-green">cu condimente</span>' : '<span class="tag tag-gray">fără condimente</span>';
+      }
+      if (isExtra) tags += '<span class="tag tag-blue">adăugat de tine</span>';
+      return '<li>' + escapeHtml(it.name) + ' ' + tags + '</li>';
+    }).join('');
+    return '<div class="sum-section"><h2 class="sum-title">' + c.label + ' <span class="sum-count">' + items.length + '</span></h2><ul class="sum-list">' + listHTML + '</ul></div>';
+  }).join('');
+  const emptyHTML = total === 0 ? '<div class="empty-msg">Nu ai selectat niciun produs.</div>' : '';
+  const filename = buildFilename(order.nume);
+  const successHTML = downloadOK
+    ? '<div class="success-box"><div class="success-icon">✅</div><div><div class="success-title">Comanda a fost descărcată!</div><div class="success-text">Fișierul <b>' + escapeHtml(filename) + '</b> se află în <b>Fișiere → Descărcări</b> (iPhone) sau <b>Downloads</b> (calculator).<br>Trimite-l lui <b>George</b>.</div></div></div>'
+    : '<div class="error-box"><div class="success-icon">⚠️</div><div><div class="success-title">Descărcarea nu a pornit automat</div><div class="success-text">Verifică setările browserului pentru descărcări, apoi încearcă din nou.</div></div></div>';
+  const backupHint = '<div class="backup-hint">Nu s-a descărcat? <button class="backup-btn" onclick="copyOrderJSON()">Copiază comanda</button> și trimite-o lui George prin mesaj.</div>';
+
+  return '<!DOCTYPE html><html lang="ro"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>Comanda – ' + escapeHtml(order.nume) + '</title>' +
+  '<style>' +
+  '* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }' +
+  'html { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }' +
+  'body { background: linear-gradient(180deg,#eff6ff 0%,#ecfdf5 100%); color:#0f172a; min-height:100vh; padding:20px 14px 60px; }' +
+  '.wrap { max-width: 780px; margin: 0 auto; }' +
+  '.header { text-align:center; margin-bottom:24px; padding: 8px 0 20px; border-bottom: 2px solid #dbeafe; }' +
+  '.event-title { font-size: 1.3em; color:#1e40af; font-weight: 800; margin-bottom: 10px; line-height:1.25; }' +
+  '.user-name { font-size: 2em; font-weight: 800; color:#0f172a; margin-bottom: 4px; word-break: break-word; }' +
+  '.user-date { color:#64748b; font-size: .9em; }' +
+  '.allergy-box { display:flex; gap:12px; align-items:flex-start; background:#fef2f2; border:2px solid #ef4444; border-radius:14px; padding:16px; margin-bottom:20px; }' +
+  '.allergy-icon { font-size: 1.6em; flex-shrink: 0; }' +
+  '.allergy-title { font-weight:700; color:#dc2626; margin-bottom:4px; }' +
+  '.allergy-text { color:#7f1d1d; font-weight:600; white-space: pre-wrap; word-break: break-word; }' +
+  '.stats { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:20px; }' +
+  '.stat { background:#fff; border-radius:14px; padding:18px; text-align:center; box-shadow: 0 2px 8px rgba(30,64,175,.06); }' +
+  '.stat-num { font-size: 2.2em; font-weight:800; color:#3b82f6; line-height:1; }' +
+  '.stat-label { font-size: .85em; color:#64748b; margin-top:6px; }' +
+  '.chart { background:#fff; border-radius:14px; padding:18px; margin-bottom:20px; box-shadow: 0 2px 8px rgba(30,64,175,.06); }' +
+  '.chart-title { font-size: .95em; font-weight:700; color:#475569; margin-bottom:14px; text-transform: uppercase; letter-spacing:.05em; }' +
+  '.chart-row { display:grid; grid-template-columns: 140px 1fr 34px; gap:10px; align-items:center; margin-bottom:10px; }' +
+  '.chart-label { font-size: .85em; color:#334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }' +
+  '.chart-track { height: 20px; background:#f1f5f9; border-radius:10px; overflow:hidden; }' +
+  '.chart-fill { height:100%; border-radius:10px; }' +
+  '.chart-value { font-weight:700; color:#334155; text-align:right; font-size:.95em; }' +
+  '@media (max-width: 520px) { .chart-row { grid-template-columns: 100px 1fr 28px; gap:8px; } .chart-label { font-size: .8em; } .user-name { font-size: 1.6em; } }' +
+  '.sum-section { background:#fff; border-radius:14px; padding:18px; margin-bottom:14px; box-shadow: 0 2px 8px rgba(30,64,175,.06); }' +
+  '.sum-title { font-size: 1.1em; color:#1e40af; margin-bottom:12px; display:flex; align-items:center; gap:10px; }' +
+  '.sum-count { background:#dbeafe; color:#1e40af; font-size:.75em; padding: 2px 10px; border-radius: 20px; font-weight: 700; }' +
+  '.sum-list { list-style: none; }' +
+  '.sum-list li { padding: 9px 0; border-bottom: 1px solid #f1f5f9; display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size: .95em; }' +
+  '.sum-list li:last-child { border-bottom: none; }' +
+  '.tag { font-size: .72em; padding: 2px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; letter-spacing:.03em; }' +
+  '.tag-green { background:#dcfce7; color:#15803d; } .tag-gray { background:#f1f5f9; color:#64748b; } .tag-blue { background:#dbeafe; color:#1e40af; }' +
+  '.empty-msg { background:#fff; border-radius:14px; padding:24px; text-align:center; color:#64748b; margin-bottom:20px; }' +
+  '.success-box, .error-box { display:flex; gap:14px; align-items:flex-start; border-radius:16px; padding:18px; margin-bottom:14px; }' +
+  '.success-box { background:#f0fdf4; border:2px solid #16a34a; } .error-box { background:#fef2f2; border:2px solid #ef4444; }' +
+  '.success-icon { font-size: 2em; flex-shrink: 0; line-height: 1; }' +
+  '.success-title { font-weight:800; font-size:1.05em; margin-bottom:6px; color:#15803d; }' +
+  '.error-box .success-title { color:#dc2626; }' +
+  '.success-text { color:#334155; font-size:.92em; line-height:1.55; }' +
+  '.success-text b { color:#0f172a; }' +
+  '.backup-hint { text-align:center; font-size:.85em; color:#64748b; margin-bottom:24px; line-height:1.5; }' +
+  '.backup-btn { background:#f1f5f9; border:1.5px solid #cbd5e1; color:#334155; padding:6px 12px; border-radius:8px; font-size:.92em; font-weight:600; cursor:pointer; font-family:inherit; }' +
+  '.backup-btn:hover { background:#e2e8f0; }' +
+  '.footer-note { margin-top:24px; text-align:center; font-size:.85em; color:#64748b; }' +
+  '</style></head><body><div class="wrap">' +
+  '<div class="header"><div class="event-title">⭐ Ziua Republicii Steliste Române ⭐</div><div class="user-name">' + escapeHtml(order.nume) + '</div><div class="user-date">' + escapeHtml(dateStr) + '</div></div>' +
+  successHTML + backupHint + alergiiHTML +
+  '<div class="stats"><div class="stat"><div class="stat-num">' + total + '</div><div class="stat-label">produse alese</div></div><div class="stat"><div class="stat-num">' + catsWithItems + '</div><div class="stat-label">categorii</div></div></div>' +
+  '<div class="chart"><div class="chart-title">Distribuție pe categorii</div>' + chartHTML + '</div>' +
+  emptyHTML + sectionsHTML +
+  '<div class="footer-note">Poftă bună! 🍖🔥</div>' +
+  '</div>' +
+  '<script>var ORDER = ' + JSON.stringify(order).replace(/</g, '\\u003c') + ';' +
+  'function copyOrderJSON(){var json=JSON.stringify(ORDER,null,2);' +
+  'function fallbackCopy(t){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");alert("Comanda a fost copiată! Trimite-o lui George prin mesaj.");}catch(e){alert("Nu s-a putut copia automat. Selectează manual din fișier.");}document.body.removeChild(ta);}' +
+  'if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(json).then(function(){alert("Comanda a fost copiată! Trimite-o lui George prin mesaj.");}).catch(function(){fallbackCopy(json);});}else{fallbackCopy(json);}}' +
+  '<\/script></body></html>';
+}
+
+/* ===== ⭐ STAR GUIDE ===== */
+const tourSteps = [
+  { text: 'Bun venit la grătar! 👋<br>Scrie-ți numele în căsuță, apoi apasă <b>Începe comanda</b> ca să continuăm.', scroll: null },
+  { text: 'Perfect! 👇<br>Derulează și bifează tot ce vrei să mănânci și să bei. Poți alege <b>oricâte</b>!', scroll: null },
+  { text: '🥩 La carne poți alege și dacă o vrei <b>cu condimente</b> — bifează a doua căsuță de sub fiecare.', scroll: 'carne' },
+  { text: '➕ Nu găsești ceva? La finalul fiecărei secțiuni poți <b>adăuga altceva</b> scriind ce vrei.', scroll: null },
+  { text: '⚠️ Dacă ai <b>alergii</b>, scrie-le în chenarul roșu de jos. E important să știm!', scroll: 'alergii' },
+  { text: '✅ Gata! Apasă <b>Trimite comanda</b> jos. Fișierul se descarcă automat — trimite-l lui <b>George</b>!', scroll: null }
+];
+
+let tourIndex = 0;
+let tourOpen = false;
+const starBubble = document.getElementById('starBubble');
+const starText = document.getElementById('starText');
+const starNext = document.getElementById('starNext');
+const starSkip = document.getElementById('starSkip');
+const starStep = document.getElementById('starStep');
+const starMascot = document.getElementById('starMascot');
+
+function showTourStep(i) {
+  tourIndex = Math.max(0, Math.min(i, tourSteps.length - 1));
+  const step = tourSteps[tourIndex];
+  const isLast = tourIndex === tourSteps.length - 1;
+  starText.innerHTML = step.text;
+  starStep.textContent = (tourIndex + 1) + ' / ' + tourSteps.length;
+  starNext.textContent = isLast ? 'Am înțeles! ✓' : 'Următorul →';
+  starSkip.style.display = isLast ? 'none' : '';
+  starBubble.classList.add('visible');
+  starMascot.classList.remove('pulse');
+  tourOpen = true;
+  if (step.scroll) {
+    const el = document.getElementById(step.scroll);
+    if (el) setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 280);
+  }
+}
+
+function hideTour() {
+  starBubble.classList.remove('visible');
+  tourOpen = false;
+}
+
+starNext.addEventListener('click', function () {
+  if (!appStarted && tourIndex === 0) {
+    showToast('Introdu numele mai întâi 😊');
+    nameInput.focus();
+    return;
+  }
+  if (tourIndex >= tourSteps.length - 1) hideTour();
+  else showTourStep(tourIndex + 1);
+});
+starSkip.addEventListener('click', hideTour);
+starMascot.addEventListener('click', function () {
+  if (tourOpen) hideTour();
+  else showTourStep(tourIndex);
+});
+
+setTimeout(function () { showTourStep(0); }, 900);
+</script>
+</body>
+</html>
