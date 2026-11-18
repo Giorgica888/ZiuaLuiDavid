@@ -70,8 +70,31 @@
   .submit-btn:active:not(:disabled) { transform: scale(.98); }
   .submit-btn:disabled { opacity: .7; cursor: wait; }
 
-  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 12px 22px; border-radius: 10px; font-size: .9em; z-index: 200; transition: transform .3s, opacity .3s; opacity: 0; pointer-events: none; max-width: 90vw; text-align: center; }
+  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f172a; color: #fff; padding: 12px 22px; border-radius: 10px; font-size: .9em; z-index: 400; transition: transform .3s, opacity .3s; opacity: 0; pointer-events: none; max-width: 90vw; text-align: center; }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  /* ===== REZULTAT (JSON + COPIAZĂ) ===== */
+  .result-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(15,23,42,.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); display: none; align-items: flex-end; justify-content: center; }
+  .result-overlay.open { display: flex; }
+  .result-card { background: #fff; width: 100%; max-width: 780px; height: 90vh; max-height: 90vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; padding: 14px 14px calc(14px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 40px rgba(0,0,0,.35); animation: resultUp .28s ease; }
+  @keyframes resultUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .result-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
+  .result-head-text { flex: 1; min-width: 0; }
+  .result-title { font-size: 1.05em; font-weight: 800; color: #1e40af; line-height: 1.2; }
+  .result-sub { font-size: .8em; color: #64748b; margin-top: 2px; }
+  .result-close { flex-shrink: 0; border: none; background: #f1f5f9; color: #475569; width: 36px; height: 36px; border-radius: 50%; font-size: 1.15em; font-weight: 700; cursor: pointer; line-height: 1; }
+  .result-close:active { background: #e2e8f0; }
+
+  .result-pre { flex: 1; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 14px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.55; white-space: pre; tab-size: 2; user-select: text; -webkit-user-select: text; -webkit-touch-callout: default; }
+
+  .result-actions { display: flex; gap: 8px; margin-top: 12px; flex-shrink: 0; }
+  .copy-btn { flex: 1; padding: 16px; font-size: 1.05em; font-weight: 700; background: linear-gradient(135deg,#3b82f6,#16a34a); color: #fff; border: none; border-radius: 12px; cursor: pointer; transition: transform .1s, background .2s; }
+  .copy-btn:active { transform: scale(.98); }
+  .copy-btn.copied { background: linear-gradient(135deg,#16a34a,#15803d); }
+  .dl-btn { flex-shrink: 0; padding: 16px 18px; font-size: .95em; font-weight: 600; background: #f1f5f9; color: #334155; border: 1.5px solid #cbd5e1; border-radius: 12px; cursor: pointer; font-family: inherit; }
+  .dl-btn:active { background: #e2e8f0; }
+  .result-hint { text-align: center; font-size: .78em; color: #94a3b8; margin-top: 8px; line-height: 1.45; flex-shrink: 0; }
 
   /* ===== STAR GUIDE ===== */
   .star-guide { position: fixed; right: 14px; bottom: 96px; z-index: 150; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
@@ -105,6 +128,9 @@
     .star-bubble-text { font-size: .84em; }
     .star-mascot { width: 40px; height: 40px; }
     .star-guide { right: 10px; bottom: 88px; }
+    .result-card { height: 92vh; max-height: 92vh; }
+    .result-pre { font-size: 11.5px; padding: 12px; }
+    .dl-btn { padding: 16px 14px; font-size: .88em; }
   }
 </style>
 </head>
@@ -144,6 +170,25 @@
 
   <div class="bottom-bar">
     <button id="submitBtn" class="submit-btn">Trimite comanda</button>
+  </div>
+</div>
+
+<!-- ===== REZULTAT: textul JSON complet + buton copiere ===== -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-card">
+    <div class="result-head">
+      <div class="result-head-text">
+        <div class="result-title" id="resultTitle">✅ Comanda ta</div>
+        <div class="result-sub">Textul complet (JSON) — apasă „Copiază” și trimite-l lui George</div>
+      </div>
+      <button class="result-close" id="resultClose" type="button" aria-label="Închide">✕</button>
+    </div>
+    <pre class="result-pre" id="resultPre"></pre>
+    <div class="result-actions">
+      <button class="copy-btn" id="copyBtn" type="button">📋 Copiază comanda</button>
+      <button class="dl-btn" id="dlBtn" type="button">⬇︎ JSON</button>
+    </div>
+    <div class="result-hint">Dacă butonul nu funcționează, ține apăsat pe text și alege „Selectează tot” → „Copiază”.</div>
   </div>
 </div>
 
@@ -214,6 +259,8 @@ const SECTIONS = [
 let currentName = '';
 let appStarted = false;
 let extraItems = { carne: [], salate: [], legume: [], sosuri: [], bauturi: [] };
+let lastOrderJSON = '';
+let lastOrder = null;
 
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -401,6 +448,7 @@ function collectOrder() {
   return order;
 }
 
+/* ===== TRIMITE COMANDA -> afișează JSON + buton copiere ===== */
 document.getElementById('submitBtn').addEventListener('click', function () {
   const btn = this;
   if (btn.disabled) return;
@@ -410,170 +458,149 @@ document.getElementById('submitBtn').addEventListener('click', function () {
     if (!confirm('Nu ai selectat niciun produs. Sigur vrei să trimiți comanda goală?')) return;
   }
 
-  btn.disabled = true;
-  const originalLabel = btn.textContent;
-  btn.textContent = 'Se pregătește…';
+  lastOrder = collectOrder();
+  lastOrderJSON = JSON.stringify(lastOrder, null, 2);
 
-  const order = collectOrder();
-  const ok = downloadJSONFile(order);
-  openSummaryTab(order, ok);
-
-  setTimeout(function () {
-    btn.disabled = false;
-    btn.textContent = originalLabel;
-  }, 1500);
+  showResult(lastOrderJSON, lastOrder);
 });
 
+function showResult(json, order) {
+  const overlay = document.getElementById('resultOverlay');
+  const pre = document.getElementById('resultPre');
+  const title = document.getElementById('resultTitle');
+
+  pre.textContent = json;
+  title.textContent = '✅ Comanda pentru ' + (order && order.nume ? order.nume : 'tine');
+
+  // reset buton copiere
+  const copyBtn = document.getElementById('copyBtn');
+  copyBtn.classList.remove('copied');
+  copyBtn.textContent = '📋 Copiază comanda';
+
+  overlay.classList.add('open');
+  hideTour();
+  pre.scrollTop = 0;
+}
+
+function closeResult() {
+  document.getElementById('resultOverlay').classList.remove('open');
+}
+
+document.getElementById('resultClose').addEventListener('click', closeResult);
+document.getElementById('resultOverlay').addEventListener('click', function (e) {
+  if (e.target === this) closeResult();
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeResult();
+});
+
+/* ===== COPIAZĂ (funcționează și pe telefon) ===== */
+function legacyCopy(text) {
+  let ok = false;
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.top = '0';
+  ta.style.left = '0';
+  ta.style.width = '1px';
+  ta.style.height = '1px';
+  ta.style.padding = '0';
+  ta.style.border = 'none';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+
+  // iOS: trebuie selectat cu range
+  try {
+    ta.focus();
+    ta.select();
+    if (typeof ta.setSelectionRange === 'function') {
+      ta.setSelectionRange(0, text.length);
+    }
+    ok = document.execCommand('copy');
+  } catch (e) {
+    ok = false;
+  }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+function copyText(text, done) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () {
+      done(true);
+    }).catch(function () {
+      done(legacyCopy(text));
+    });
+  } else {
+    done(legacyCopy(text));
+  }
+}
+
+document.getElementById('copyBtn').addEventListener('click', function () {
+  const btn = this;
+  const text = lastOrderJSON || document.getElementById('resultPre').textContent;
+
+  copyText(text, function (ok) {
+    if (ok) {
+      btn.classList.add('copied');
+      btn.textContent = '✅ Copiat!';
+      showToast('Comanda a fost copiată! Trimite-o lui George.');
+      setTimeout(function () {
+        btn.classList.remove('copied');
+        btn.textContent = '📋 Copiază comanda';
+      }, 2200);
+    } else {
+      // fallback: selectează tot textul ca să poată copia manual
+      const pre = document.getElementById('resultPre');
+      const range = document.createRange();
+      range.selectNodeContents(pre);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      showToast('Selectează „Copiază” din meniul telefonului.');
+    }
+  });
+});
+
+/* ===== DESCĂRCARE JSON (opțional) ===== */
 function buildFilename(nume) {
   const safeName = (nume || 'comanda').replace(/[^a-zA-Z0-9ăâîșțĂÂÎȘȚ]+/g, '_').replace(/^_+|_+$/g, '');
   return 'Ziua_Republicii_Steliste_Romane_' + (safeName || 'comanda') + '.json';
 }
 
-function downloadJSONFile(order) {
+function downloadJSONText(text, nume) {
   try {
-    const filename = buildFilename(order.nume);
-    const json = JSON.stringify(order, null, 2);
-    const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+    const filename = buildFilename(nume);
+    const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
     if (window.navigator && window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveOrOpenBlob(blob, filename);
       return true;
     }
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = filename; a.rel = 'noopener'; a.style.display = 'none';
-    document.body.appendChild(a); a.click();
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
     setTimeout(function () {
       if (a.parentNode) a.parentNode.removeChild(a);
       URL.revokeObjectURL(url);
     }, 500);
     return true;
-  } catch (e) { return false; }
-}
-
-function openSummaryTab(order, downloadOK) {
-  const html = buildSummaryHTML(order, downloadOK);
-  const w = window.open('', '_blank');
-  if (!w) {
-    showToast(downloadOK ? 'Comanda a fost descărcată! ✅' : 'Eroare la descărcare.');
-    return;
+  } catch (e) {
+    return false;
   }
-  w.document.open(); w.document.write(html); w.document.close();
 }
 
-function buildSummaryHTML(order, downloadOK) {
-  const CATS = [
-    { key: 'carne',   label: '🥩 Carne',                color: '#ef4444' },
-    { key: 'salate',  label: '🥗 Salate',               color: '#22c55e' },
-    { key: 'legume',  label: '🔥 Legume, pâine, cartofi', color: '#f59e0b' },
-    { key: 'sosuri',  label: '🥫 Sosuri',               color: '#a855f7' },
-    { key: 'bauturi', label: '🥤 Băuturi',              color: '#0ea5e9' }
-  ];
-  const perCat = {};
-  CATS.forEach(function (c) { perCat[c.key] = []; });
-  Object.keys(order.selectii.carne).forEach(function (name) {
-    const v = order.selectii.carne[name];
-    if (v && v.selectat) perCat.carne.push({ name: name, cu_condimente: v.cu_condimente });
-  });
-  ['salate', 'legume', 'sosuri', 'bauturi'].forEach(function (sec) {
-    Object.keys(order.selectii[sec]).forEach(function (name) {
-      if (order.selectii[sec][name]) perCat[sec].push({ name: name });
-    });
-  });
-  const total = CATS.reduce(function (sum, c) { return sum + perCat[c.key].length; }, 0);
-  const catsWithItems = CATS.filter(function (c) { return perCat[c.key].length > 0; }).length;
-  const maxCount = Math.max.apply(null, [1].concat(CATS.map(function (c) { return perCat[c.key].length; })));
-  const d = new Date(order.data);
-  const dateStr = d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'long', year: 'numeric' }) +
-                  ' · ' + d.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
-  const alergiiHTML = order.alergii
-    ? '<div class="allergy-box"><div class="allergy-icon">⚠️</div><div><div class="allergy-title">Alergii declarate</div><div class="allergy-text">' + escapeHtml(order.alergii) + '</div></div></div>'
-    : '';
-  const chartHTML = CATS.map(function (c) {
-    const n = perCat[c.key].length;
-    const pct = Math.round((n / maxCount) * 100);
-    return '<div class="chart-row"><div class="chart-label">' + c.label + '</div><div class="chart-track"><div class="chart-fill" style="width:' + pct + '%;background:' + c.color + ';"></div></div><div class="chart-value">' + n + '</div></div>';
-  }).join('');
-  const sectionsHTML = CATS.map(function (c) {
-    const items = perCat[c.key];
-    if (items.length === 0) return '';
-    const listHTML = items.map(function (it) {
-      const isExtra = (order.adaugate_de_utilizator[c.key] || []).indexOf(it.name) !== -1;
-      let tags = '';
-      if (it.cu_condimente !== undefined) {
-        tags += it.cu_condimente ? '<span class="tag tag-green">cu condimente</span>' : '<span class="tag tag-gray">fără condimente</span>';
-      }
-      if (isExtra) tags += '<span class="tag tag-blue">adăugat de tine</span>';
-      return '<li>' + escapeHtml(it.name) + ' ' + tags + '</li>';
-    }).join('');
-    return '<div class="sum-section"><h2 class="sum-title">' + c.label + ' <span class="sum-count">' + items.length + '</span></h2><ul class="sum-list">' + listHTML + '</ul></div>';
-  }).join('');
-  const emptyHTML = total === 0 ? '<div class="empty-msg">Nu ai selectat niciun produs.</div>' : '';
-  const filename = buildFilename(order.nume);
-  const successHTML = downloadOK
-    ? '<div class="success-box"><div class="success-icon">✅</div><div><div class="success-title">Comanda a fost descărcată!</div><div class="success-text">Fișierul <b>' + escapeHtml(filename) + '</b> se află în <b>Fișiere → Descărcări</b> (iPhone) sau <b>Downloads</b> (calculator).<br>Trimite-l lui <b>George</b>.</div></div></div>'
-    : '<div class="error-box"><div class="success-icon">⚠️</div><div><div class="success-title">Descărcarea nu a pornit automat</div><div class="success-text">Verifică setările browserului pentru descărcări, apoi încearcă din nou.</div></div></div>';
-  const backupHint = '<div class="backup-hint">Nu s-a descărcat? <button class="backup-btn" onclick="copyOrderJSON()">Copiază comanda</button> și trimite-o lui George prin mesaj.</div>';
-
-  return '<!DOCTYPE html><html lang="ro"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>Comanda – ' + escapeHtml(order.nume) + '</title>' +
-  '<style>' +
-  '* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }' +
-  'html { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-text-size-adjust: 100%; }' +
-  'body { background: linear-gradient(180deg,#eff6ff 0%,#ecfdf5 100%); color:#0f172a; min-height:100vh; padding:20px 14px 60px; }' +
-  '.wrap { max-width: 780px; margin: 0 auto; }' +
-  '.header { text-align:center; margin-bottom:24px; padding: 8px 0 20px; border-bottom: 2px solid #dbeafe; }' +
-  '.event-title { font-size: 1.3em; color:#1e40af; font-weight: 800; margin-bottom: 10px; line-height:1.25; }' +
-  '.user-name { font-size: 2em; font-weight: 800; color:#0f172a; margin-bottom: 4px; word-break: break-word; }' +
-  '.user-date { color:#64748b; font-size: .9em; }' +
-  '.allergy-box { display:flex; gap:12px; align-items:flex-start; background:#fef2f2; border:2px solid #ef4444; border-radius:14px; padding:16px; margin-bottom:20px; }' +
-  '.allergy-icon { font-size: 1.6em; flex-shrink: 0; }' +
-  '.allergy-title { font-weight:700; color:#dc2626; margin-bottom:4px; }' +
-  '.allergy-text { color:#7f1d1d; font-weight:600; white-space: pre-wrap; word-break: break-word; }' +
-  '.stats { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:20px; }' +
-  '.stat { background:#fff; border-radius:14px; padding:18px; text-align:center; box-shadow: 0 2px 8px rgba(30,64,175,.06); }' +
-  '.stat-num { font-size: 2.2em; font-weight:800; color:#3b82f6; line-height:1; }' +
-  '.stat-label { font-size: .85em; color:#64748b; margin-top:6px; }' +
-  '.chart { background:#fff; border-radius:14px; padding:18px; margin-bottom:20px; box-shadow: 0 2px 8px rgba(30,64,175,.06); }' +
-  '.chart-title { font-size: .95em; font-weight:700; color:#475569; margin-bottom:14px; text-transform: uppercase; letter-spacing:.05em; }' +
-  '.chart-row { display:grid; grid-template-columns: 140px 1fr 34px; gap:10px; align-items:center; margin-bottom:10px; }' +
-  '.chart-label { font-size: .85em; color:#334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }' +
-  '.chart-track { height: 20px; background:#f1f5f9; border-radius:10px; overflow:hidden; }' +
-  '.chart-fill { height:100%; border-radius:10px; }' +
-  '.chart-value { font-weight:700; color:#334155; text-align:right; font-size:.95em; }' +
-  '@media (max-width: 520px) { .chart-row { grid-template-columns: 100px 1fr 28px; gap:8px; } .chart-label { font-size: .8em; } .user-name { font-size: 1.6em; } }' +
-  '.sum-section { background:#fff; border-radius:14px; padding:18px; margin-bottom:14px; box-shadow: 0 2px 8px rgba(30,64,175,.06); }' +
-  '.sum-title { font-size: 1.1em; color:#1e40af; margin-bottom:12px; display:flex; align-items:center; gap:10px; }' +
-  '.sum-count { background:#dbeafe; color:#1e40af; font-size:.75em; padding: 2px 10px; border-radius: 20px; font-weight: 700; }' +
-  '.sum-list { list-style: none; }' +
-  '.sum-list li { padding: 9px 0; border-bottom: 1px solid #f1f5f9; display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size: .95em; }' +
-  '.sum-list li:last-child { border-bottom: none; }' +
-  '.tag { font-size: .72em; padding: 2px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; letter-spacing:.03em; }' +
-  '.tag-green { background:#dcfce7; color:#15803d; } .tag-gray { background:#f1f5f9; color:#64748b; } .tag-blue { background:#dbeafe; color:#1e40af; }' +
-  '.empty-msg { background:#fff; border-radius:14px; padding:24px; text-align:center; color:#64748b; margin-bottom:20px; }' +
-  '.success-box, .error-box { display:flex; gap:14px; align-items:flex-start; border-radius:16px; padding:18px; margin-bottom:14px; }' +
-  '.success-box { background:#f0fdf4; border:2px solid #16a34a; } .error-box { background:#fef2f2; border:2px solid #ef4444; }' +
-  '.success-icon { font-size: 2em; flex-shrink: 0; line-height: 1; }' +
-  '.success-title { font-weight:800; font-size:1.05em; margin-bottom:6px; color:#15803d; }' +
-  '.error-box .success-title { color:#dc2626; }' +
-  '.success-text { color:#334155; font-size:.92em; line-height:1.55; }' +
-  '.success-text b { color:#0f172a; }' +
-  '.backup-hint { text-align:center; font-size:.85em; color:#64748b; margin-bottom:24px; line-height:1.5; }' +
-  '.backup-btn { background:#f1f5f9; border:1.5px solid #cbd5e1; color:#334155; padding:6px 12px; border-radius:8px; font-size:.92em; font-weight:600; cursor:pointer; font-family:inherit; }' +
-  '.backup-btn:hover { background:#e2e8f0; }' +
-  '.footer-note { margin-top:24px; text-align:center; font-size:.85em; color:#64748b; }' +
-  '</style></head><body><div class="wrap">' +
-  '<div class="header"><div class="event-title">⭐ Ziua Republicii Steliste Române ⭐</div><div class="user-name">' + escapeHtml(order.nume) + '</div><div class="user-date">' + escapeHtml(dateStr) + '</div></div>' +
-  successHTML + backupHint + alergiiHTML +
-  '<div class="stats"><div class="stat"><div class="stat-num">' + total + '</div><div class="stat-label">produse alese</div></div><div class="stat"><div class="stat-num">' + catsWithItems + '</div><div class="stat-label">categorii</div></div></div>' +
-  '<div class="chart"><div class="chart-title">Distribuție pe categorii</div>' + chartHTML + '</div>' +
-  emptyHTML + sectionsHTML +
-  '<div class="footer-note">Poftă bună! 🍖🔥</div>' +
-  '</div>' +
-  '<script>var ORDER = ' + JSON.stringify(order).replace(/</g, '\\u003c') + ';' +
-  'function copyOrderJSON(){var json=JSON.stringify(ORDER,null,2);' +
-  'function fallbackCopy(t){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");alert("Comanda a fost copiată! Trimite-o lui George prin mesaj.");}catch(e){alert("Nu s-a putut copia automat. Selectează manual din fișier.");}document.body.removeChild(ta);}' +
-  'if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(json).then(function(){alert("Comanda a fost copiată! Trimite-o lui George prin mesaj.");}).catch(function(){fallbackCopy(json);});}else{fallbackCopy(json);}}' +
-  '<\/script></body></html>';
-}
+document.getElementById('dlBtn').addEventListener('click', function () {
+  const text = lastOrderJSON || document.getElementById('resultPre').textContent;
+  const nume = lastOrder && lastOrder.nume ? lastOrder.nume : currentName;
+  const ok = downloadJSONText(text, nume);
+  showToast(ok ? 'Fișier JSON descărcat ✅' : 'Descărcarea nu a funcționat.');
+});
 
 /* ===== ⭐ STAR GUIDE ===== */
 const tourSteps = [
@@ -582,7 +609,7 @@ const tourSteps = [
   { text: '🥩 La carne poți alege și dacă o vrei <b>cu condimente</b> — bifează a doua căsuță de sub fiecare.', scroll: 'carne' },
   { text: '➕ Nu găsești ceva? La finalul fiecărei secțiuni poți <b>adăuga altceva</b> scriind ce vrei.', scroll: null },
   { text: '⚠️ Dacă ai <b>alergii</b>, scrie-le în chenarul roșu de jos. E important să știm!', scroll: 'alergii' },
-  { text: '✅ Gata! Apasă <b>Trimite comanda</b> jos. Fișierul se descarcă automat — trimite-l lui <b>George</b>!', scroll: null }
+  { text: '✅ Gata! Apasă <b>Trimite comanda</b> jos. Textul comenzii apare pe ecran — apasă <b>Copiază</b> și trimite-l lui <b>George</b>!', scroll: null }
 ];
 
 let tourIndex = 0;
